@@ -7,7 +7,7 @@ chdir('t');
 
 use_ok( 'Nagios::Config' );
 
-ok( my $cf = Nagios::Config->new(Filename => "v2_config/nagios.cfg", Version => 2),
+ok( my $cf = Nagios::Config->new(Filename => "t/v2_config/nagios.cfg", Version => 2),
     "Nagios::Config->new()" );
 
 diag( "run tests to make sure inherited Nagios::Config::File methods work" );
