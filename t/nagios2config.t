@@ -3,15 +3,17 @@ use Test::More qw(no_plan);
 use lib qw( ./lib ../lib );
 #BEGIN { plan tests => 7; }
 
+chdir('t');
+
 use_ok( 'Nagios::Config' );
 
-ok( my $cf = Nagios::Config->new(Filename => "t/nagios.cfg"),
+ok( my $cf = Nagios::Config->new(Filename => "v2_config/nagios.cfg", Version => 2),
     "Nagios::Config->new()" );
 
 diag( "run tests to make sure inherited Nagios::Config::File methods work" );
 
-is( $cf->get('command_check_interval'), '15s',
-    "get('command_check_interval') returns 15s" );
+is( $cf->get('command_check_interval'), '-1',
+    "get('command_check_interval') returns -1" );
 
 is( $cf->get('downtime_file'), $cf->get_attr('downtime_file'),
     "make sure get_attr from v0.02 still works" );
@@ -29,4 +31,5 @@ ok( $cf->resolve_objects, "\$parser->resolve_objects should be ok to call multip
 ok( $cf->register_objects, "\$parser->register_objects should be ok to call multiple times" );
 
 ok( my @hosts = $cf->list_hosts(), "\$parser->list_hosts()" );
+ok( my @services = $cf->list_hosts(), "\$parser->list_services()" );
 
