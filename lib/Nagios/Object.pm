@@ -21,6 +21,7 @@ use warnings;
 use strict qw( subs vars );
 use Carp;
 use Exporter;
+use Data::Dumper;
 @Nagios::Object::ISA = qw( Exporter );
 $Nagios::Object::VERSION = 0.06;
 
@@ -87,6 +88,7 @@ push( @Nagios::Object::EXPORT_OK, '%nagios_setup' );
         contact_groups                => [['Nagios::ContactGroup'],  8  ],
         notifications_enabled         => ['BINARY',                  8  ],
         stalking_options              => [[qw(o w u c)],             8  ],
+        failure_prediction_enabled    => ['BINARY',                  16 ],
         name                          => ['service_description',     134],
         comment                       => ['comment',                 6  ],
         file                          => ['filename',                6  ]
@@ -124,6 +126,7 @@ push( @Nagios::Object::EXPORT_OK, '%nagios_setup' );
 	    notifications_enabled         => ['BINARY',                  8  ],
 	    stalking_options              => [[qw(o d u)],               8  ],
 	    contact_groups                => [['Nagios::ContactGroup'],  16 ],
+        failure_prediction_enabled    => ['BINARY',                  16 ],
 	    name                          => ['host_name',               6  ],
 	    comment                       => ['comment',                 6  ],
 	    file                          => ['filename',                6  ]
@@ -494,16 +497,28 @@ sub dump {
 
     foreach my $attribute ( $self->list_attributes ) {
         my $value = $self->$attribute();
-        next if ( $attribute =~ /(use|register)/ && !$value );
+        next if ( $attribute eq 'register' && !defined $value );
+
 
         my $attrtype = $self->attribute_type( $attribute );
-        if ( $attrtype eq 'TIMERANGE' ) {
+
+        if ( $attribute eq 'use' ) {
+            next if ( !$value || !$value->use ); # root-level template
+            $value = $value->use->name;
+        }
+        elsif ( $attrtype eq 'TIMERANGE' ) {
             $value = dump_time_range( $value );
         }
-        elsif ( !ref($value) && $attrtype =~ /^Nagios::(.*)$/ ) {
+        # not sure if this is ever used ... might delete it after testing
+        # -- tobeya 01/11/2006
+        elsif ( $value && !ref($value) && $attrtype =~ /^Nagios::(.*)$/ ) {
             $value = $self->name;
         }
 
+
+        if ( ref($value) eq 'ARRAY' ) {
+            $value = join ', ', map { $_->name } @$value;
+        }
         if ( $value ) {
             $retval .= "\t$attribute = $value\n";
         }
@@ -603,14 +618,37 @@ sub list_attributes { keys( %{$nagios_setup{$_[0]->setup_key}} ) }
 
 =item attribute_type()
 
-Returns the type of data expected by the object's set_ method for the given attribute.
+Returns the type of data expected by the object's set_ method for the given attribute.  For some fields like notification_options, it may return "char_flag."
+
+For "name" attributes, it will simply return whatever %setup_data contains.
+
+This method needs some TLC ...
 
  my $type = $host->attribute_type("notification_period");
 
 =cut
 
 sub attribute_type {
-    my $arref = $nagios_setup{$_[0]->setup_key}->{$_[1]}[0];
+    my $self = $_[0];
+#                             self               field type
+    my $type = $nagios_setup{$_[0]->setup_key}->{$_[1]}[0];
+    if ( ref($type) eq 'ARRAY' ) {
+        if ( @$type == 1 ) {
+            return $type->[0];
+        }
+        elsif ( @$type > 1 && length($type->[0]) == 1 ) {
+            return "char_flag";
+        }
+        elsif ( $_[1] eq 'name' ) {
+            return $type;
+        }
+        else {
+            croak "bug tobeya\@cpan.org to fix this ...";
+        }
+    }
+    else {
+        return $type;
+    }
 }
 
 =item attribute_is_list()
@@ -775,10 +813,13 @@ sub _validate {
 }
 # ---------------------------------------------------------------------------- #
 # ---------------------------------------------------------------------------- #
+# incomplete ..
 sub html_widget {
     my( $self, $attribute ) = @_;
     my( $type, $flags ) = @{$nagios_setup{ref $self}->{$attribute}};
     my $retval = '';
+
+croak "not done yet ... bug tobeya at cpan.org";
 
     sub html_widget_for_type {
         if ( exists $nagios_setup{$_} ) {
@@ -806,7 +847,7 @@ sub html_widget {
 # ---------------------------------------------------------------------------- #
 # This will create classes with methods defined in %nagios_setup at
 # compile-time.  In mod_perl, methods will be as fast as hand-written
-# equivalents.  Maybe if some methos prove rarely used (likely) it may make
+# equivalents.  Maybe if some methods prove rarely used (likely) it may make
 # sense to just use AUTOLOAD and have that instantiate the subroutines, so
 # only the first call to a sub is slow
 GENESIS: {
