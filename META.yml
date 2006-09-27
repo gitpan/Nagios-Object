@@ -1,6 +1,6 @@
 ---
 name: Nagios-Object
-version: 0.10
+version: 0.11
 author:
   - 'Albert P Tobey <tobert@gmail.com>'
 abstract: 'Nagios::Object - Nagios object configuration parsing.'
@@ -21,7 +21,7 @@ provides:
     file: lib/Nagios/StatusLog.pm
   Nagios::Object:
     file: lib/Nagios/Object.pm
-    version: 0.06
+    version: 0.11
   Nagios::Object::Config:
     file: lib/Nagios/Object/Config.pm
   Nagios::Program::Status:
