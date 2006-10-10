@@ -47,4 +47,5 @@
 	specified in the nagios.cfg that don't exist (fixes RT #20924)
 	- requested by Andrew Ruthven
 0.11 - add check_freshness/freshness_threshold to Nagios::Host
+0.12 - added check_interval to Nagios::Host (pointed out by Nenad Noveljic)
 

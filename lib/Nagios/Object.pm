@@ -116,6 +116,7 @@ push( @Nagios::Object::EXPORT_OK, '%nagios_setup' );
 	    max_check_attempts            => ['INTEGER',                 8  ],
 	    checks_enabled                => ['BINARY',                  8  ],
         check_freshness               => ['BINARY',                  8  ],
+        check_interval                => ['INTEGER',                 8  ],
         freshness_threshold           => ['INTEGER',                 8  ],
 	    event_handler                 => ['STRING',                  8  ],
 	    event_handler_enabled         => ['BINARY',                  8  ],
