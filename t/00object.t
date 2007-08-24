@@ -1,4 +1,9 @@
 #!/usr/bin/perl -w
+
+# File ID: $Id: 00object.t 31 2007-08-24 02:42:41Z atobey $
+# Last Change: $LastChangedDate: 2007-08-23 19:42:41 -0700 (Thu, 23 Aug 2007) $
+# Revision: $Rev: 31 $
+
 use lib qw( ../lib ./lib );
 use Test::More qw(no_plan);
 

@@ -2,7 +2,7 @@
 #                                                                         #
 # Nagios::StatusLog, Nagios::(Service|Host|Program)::Status               #
 # Written by Albert Tobey <tobeya@cpan.org>                               #
-# Copyright 2003, Albert P Tobey                                          #
+# Copyright 2003-2007, Albert P Tobey                                     #
 #                                                                         #
 # This program is free software; you can redistribute it and/or modify it #
 # under the terms of the GNU General Public License as published by the   #
@@ -20,6 +20,8 @@ use Carp;
 use strict qw( subs vars );
 use warnings;
 use Symbol;
+
+our $VERSION = sprintf("2.%06d", q$Rev: 32 $ =~ /(\d+)/o);
 
 # this is going to be rewritten to use AUTOLOAD + method caching in a future version
 BEGIN {
@@ -275,6 +277,8 @@ sub update_v2 ($) {
         (\w+) \s*
         # capture all of the text between the brackets into $2
         {( .*? )}
+        # match the last bracket only if followed by another definition
+        (?=(?: \s* (?:info|program|host|service) \s* { | \Z) )
         # capture remaining text (1-2 lines) into $3 for re-processing
         (.*)$
     /xs;

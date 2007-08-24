@@ -1,4 +1,9 @@
 #!/usr/bin/perl
+
+# File ID: $Id: decode_flags.pl 31 2007-08-24 02:42:41Z atobey $
+# Last Change: $LastChangedDate: 2007-08-23 19:42:41 -0700 (Thu, 23 Aug 2007) $
+# Revision: $Rev: 31 $
+
 use lib qw(./lib ../lib);
 
 use Nagios::Object qw(:all);
