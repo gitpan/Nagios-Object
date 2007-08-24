@@ -2,7 +2,7 @@
 #                                                                         #
 # Nagios::Object::Config                                                  #
 # Written by Albert Tobey <tobeya@cpan.org>                               #
-# Copyright 2003-2006, Albert P Tobey                                     #
+# Copyright 2003-2007, Albert P Tobey                                     #
 #                                                                         #
 # This program is free software; you can redistribute it and/or modify it #
 # under the terms of the GNU General Public License as published by the   #
@@ -23,7 +23,7 @@ use Scalar::Util qw(blessed);
 use Symbol;
 use Carp;
 
-our $VERSION = sprintf("2.%06d", q$Rev: 32 $ =~ /(\d+)/o);
+our $VERSION = sprintf('%06d', '$Rev: 34 $' =~ /(\d+)/o);
 our $fast_mode = undef;
 
 =head1 NAME
@@ -648,7 +648,7 @@ Returns an array/arrayref of objects of the given type.
  $config->list_hostescalations
  $config->list_hostgroupescalations
  $config->list_serviceescalations
- $config->list_servicegroup
+ $config->list_servicegroups
  $config->list_hostextinfo
  $config->list_serviceextinfo
 

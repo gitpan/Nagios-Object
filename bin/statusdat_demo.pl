@@ -1,8 +1,8 @@
 #!/usr/local/bin/perl
 
-# File ID: $Id: statusdat_demo.pl 31 2007-08-24 02:42:41Z atobey $
-# Last Change: $LastChangedDate: 2007-08-23 19:42:41 -0700 (Thu, 23 Aug 2007) $
-# Revision: $Rev: 31 $
+# $Id: statusdat_demo.pl 35 2007-08-24 05:33:07Z atobey $
+# $LastChangedDate: 2007-08-23 22:33:07 -0700 (Thu, 23 Aug 2007) $
+# $Rev: 35 $
 
 use lib qw(./lib ../lib);
 use Nagios::StatusLog;
@@ -11,6 +11,8 @@ use Getopt::Std;
 use Data::Dumper;
 
 =head1 NAME
+
+statusdat_demo.pl - test the StatusLog module
 
 =head1 USAGE
 
