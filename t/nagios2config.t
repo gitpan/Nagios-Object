@@ -1,9 +1,5 @@
 #!/usr/local/bin/perl
 
-# File ID: $Id: nagios2config.t 31 2007-08-24 02:42:41Z atobey $
-# Last Change: $LastChangedDate: 2007-08-23 19:42:41 -0700 (Thu, 23 Aug 2007) $
-# Revision: $Rev: 31 $
-
 use strict;
 use Test::More;
 use lib qw( ./lib ../lib );

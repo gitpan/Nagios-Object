@@ -1,8 +1,8 @@
 #!/usr/local/bin/perl
 
-# File ID: $Id: config_status_demo.pl 31 2007-08-24 02:42:41Z atobey $
-# Last Change: $LastChangedDate: 2007-08-23 19:42:41 -0700 (Thu, 23 Aug 2007) $
-# Revision: $Rev: 31 $
+# File ID: $Id$
+# Last Change: $LastChangedDate$
+# Revision: $Rev$
 
 use Nagios::Config;
 use Nagios::StatusLog;
@@ -19,8 +19,8 @@ perl config_status_demo.pl -c /etc/opt/nagios/nagios.cfg -l /var/opt/nagios/stat
 
 =head1 NOTES
 
-Please send the benchmark outputs to tobeya@cpan.org so I can see how the performance
-is on boxes and configs other than my own.
+Please send the benchmark outputs to duncs@cpan.org so I can see how the 
+performance is on boxes and configs other than my own.
 
 This setup is very sensitive to mistmatches between the configuration and the status log.
 

@@ -1,8 +1,10 @@
 ###########################################################################
 #                                                                         #
 # Nagios::Config                                                          #
+# Maintained by Duncan Ferguson <duncs@cpan.org>                          #
 # Written by Albert Tobey <tobeya@cpan.org>                               #
-# Copyright 2003, Albert P Tobey                                          #
+# Copyright 2003-2009, Albert P Tobey                                     #
+# Copyright 2009, Albert P Tobey and Duncan Ferguson                      #
 #                                                                         #
 # This program is free software; you can redistribute it and/or modify it #
 # under the terms of the GNU General Public License as published by the   #
@@ -26,7 +28,7 @@ use Symbol qw(gensym);
 use File::Basename;
 @Nagios::Config::ISA = qw( Nagios::Object::Config Nagios::Config::File );
 
-our $VERSION = sprintf('%06d', '$Rev: 34 $' =~ /(\d+)/o);
+our $VERSION = '0.21';
 our $fast_mode = undef;
 
 =head1 NAME

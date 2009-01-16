@@ -1,10 +1,5 @@
 #!/usr/bin/perl
 
-# File ID: $Id: 54dump.t 31 2007-08-24 02:42:41Z atobey $
-# Last Change: $LastChangedDate: 2007-08-23 19:42:41 -0700 (Thu, 23 Aug 2007) $
-# Revision: $Rev: 31 $
-
-
 use strict;
 use Test::More qw(no_plan);
 use File::Temp qw(tempfile);

@@ -1,8 +1,10 @@
 ###########################################################################
 #                                                                         #
 # Nagios::StatusLog, Nagios::(Service|Host|Program)::Status               #
+# Maintained by Duncan Ferguson <duncs@cpan.org>                          #
 # Written by Albert Tobey <tobeya@cpan.org>                               #
-# Copyright 2003-2007, Albert P Tobey                                     #
+# Copyright 2003-2009, Albert P Tobey                                     #
+# Copyright 2009, Albert P Tobey and Duncan Ferguson                      #
 #                                                                         #
 # This program is free software; you can redistribute it and/or modify it #
 # under the terms of the GNU General Public License as published by the   #
@@ -20,8 +22,7 @@ use Carp;
 use strict qw( subs vars );
 use warnings;
 use Symbol;
-
-our $VERSION = sprintf('%06d', '$Rev: 34 $' =~ /(\d+)/o);
+our $VERSION = '0.21';
 
 # this is going to be rewritten to use AUTOLOAD + method caching in a future version
 BEGIN {
@@ -557,6 +558,8 @@ Nagios::Host Nagios::Service
 
 package Nagios::Service::Status;
 
+our $VERSION = sprintf('%06d', '$Rev$' =~ /(\d+)/o);
+
 # Nagios 2.x has current_state instead of status, but since anybody
 # using this module is probably using status and does not want to
 # mess around with converting the integer, this method wraps it up
@@ -591,6 +594,7 @@ sub status {
 }
 
 package Nagios::Host::Status;
+our $VERSION = sprintf('%06d', '$Rev$' =~ /(\d+)/o);
 
 # same deal as Nagios::Service::Status::status()
 sub status {
@@ -620,8 +624,10 @@ sub status {
 }
 
 package Nagios::Program::Status;
+our $VERSION = sprintf('%06d', '$Rev$' =~ /(\d+)/o);
 
 package Nagios::Info::Status;
+our $VERSION = sprintf('%06d', '$Rev$' =~ /(\d+)/o);
 
 1;
 

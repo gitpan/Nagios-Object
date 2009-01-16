@@ -1,8 +1,8 @@
 #!/usr/local/bin/perl
 
-# $Id: statusdat_demo.pl 35 2007-08-24 05:33:07Z atobey $
-# $LastChangedDate: 2007-08-23 22:33:07 -0700 (Thu, 23 Aug 2007) $
-# $Rev: 35 $
+# $Id$
+# $LastChangedDate$
+# $Rev$
 
 use lib qw(./lib ../lib);
 use Nagios::StatusLog;
@@ -20,8 +20,8 @@ perl statusdat_demo.pl -l /var/opt/nagios/status.dat
 
 =head1 NOTES
 
-Please send the benchmark outputs to tobeya@cpan.org so I can see how the performance
-is on boxes and configs other than my own.
+Please send the benchmark outputs to duncs@cpan.org so I can see how the 
+performance is on boxes and configs other than my own.
 
 =cut
 

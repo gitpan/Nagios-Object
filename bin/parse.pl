@@ -1,8 +1,8 @@
 #!/usr/bin/perl -w
 
-# File ID: $Id: parse.pl 31 2007-08-24 02:42:41Z atobey $
-# Last Change: $LastChangedDate: 2007-08-23 19:42:41 -0700 (Thu, 23 Aug 2007) $
-# Revision: $Rev: 31 $
+# $Id$
+# $LastChangedDate$
+# $Rev$
 
 use strict;
 use lib qw( ./lib ../lib);
@@ -12,12 +12,17 @@ use Getopt::Std;
 use Benchmark qw(:all);
 use Data::Dumper;
 
-our( $opt_n, $opt_o, $opt_v, $opt_b, $opt_d, $opt_f, $opt_r );
+our( $opt_n, $opt_o, $opt_v, $opt_b, $opt_d, $opt_f, $opt_r, $opt_l );
 getopt( 'n:o:v:' );
-getopt( 'bdfr' );
+getopt( 'bdfrl' );
 
 if ( $opt_f ) {
     Nagios::Config->fast_mode(1);
+}
+
+Nagios::Object::Config->strict_mode(undef);
+unless ( $opt_l ) {
+    Nagios::Object::Config->strict_mode(1);
 }
 
 if ( !$opt_n && !$opt_o ) {
