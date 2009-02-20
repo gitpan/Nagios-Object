@@ -87,4 +87,8 @@
     * light test cleaning
 
 0.21.1 - slight amendment of version numbers to allow uploading to CPAN
-0.21.2 - Fix version numbers missed from 0.21.1
+0.21.2 - Fix version numbers missed from 0.21.1 and reinitialise them where
+        possible
+0.21.3 - Apply 'whatis' patch from Ryan52
+       - Cope with Nagios 3 status.dat file better
+       - Apply Nagios 3 stanza patch from Shadih Rahman

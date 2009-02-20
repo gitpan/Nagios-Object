@@ -28,7 +28,7 @@ use Scalar::Util qw(blessed);
 
 # NOTE: due to CPAN version checks this cannot currently be changed to a
 # standard version string, i.e. '0.21'
-our $VERSION = '35';
+our $VERSION = '36';
 our $pre_link = undef;
 our $fast_mode = undef;
 our %nagios_setup;
@@ -68,7 +68,7 @@ push( @Nagios::Object::EXPORT_OK, '%nagios_setup' );
         service_description           => ['STRING',                  10 ],
         host_name                     => [['Nagios::Host'],          10 ],
         servicegroups                 => [['Nagios::ServiceGroup'],  280],
-        hostgroup                     => [['Nagios::HostGroup'],     280],
+        hostgroup_name                => [['Nagios::HostGroup'],     256],
         is_volatile                   => ['BINARY',                  280],
         check_command                 => ['Nagios::Command',         280],
         max_check_attempts            => ['INTEGER',                 280],
@@ -116,7 +116,7 @@ push( @Nagios::Object::EXPORT_OK, '%nagios_setup' );
 	    alias                         => ['STRING',                  280],
 	    address                       => ['STRING',                  280],
 	    parents                       => [['Nagios::Host'],          280],
-        hostgroup                     => [['Nagios::HostGroup'],     280],
+            hostgroups                    => [['Nagios::HostGroup'],     280],
 	    check_command                 => ['STRING',                  280],
 	    max_check_attempts            => ['INTEGER',                 280],
 	    checks_enabled                => ['BINARY',                  280],
@@ -323,7 +323,7 @@ foreach ( keys(%nagios_setup) ) {
 
 =head1 NAME
 
-Nagios::Object
+Nagios::Object - Creates perl objects to represent Nagios objects
 
 =head1 DESCRIPTION
 
