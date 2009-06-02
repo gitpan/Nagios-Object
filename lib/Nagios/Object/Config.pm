@@ -181,7 +181,12 @@ sub parse {
 	    }
 	
 	    # end of object definition
-	    if ( $line =~ /}(.*)$/ ) {
+	    # Some object attributes are strings, which can contain a right-curly bracket and confuse this parser:
+	    #  - The proper fix would be to make the parser sensitive to arbitrary string attributes, but I will just
+	    #    do it the easy way for now and assume there is no more text on the same line after the right-curly
+	    #    bracket that closes the object definition.
+	    #if ( $line =~ /}(.*)$/ ) {
+	    if ( $line =~ /}(\s*)$/ ) {
 	        $in_definition = undef;
             # continue parsing after closing object with text following the '}'
             $append = $1;
@@ -531,7 +536,15 @@ sub register_object_list {
     my( $self, $object, $attribute, $attr_type ) = @_;
 
     # split on comma surrounded by whitespace or by just whitespace
-    my @to_find = split /\s*,\s*|\s+/, $object->$attribute();
+    #  - don't try splitting it if it has already been split by the Nagios::Object::_set function!
+    #  - same bug reported in CPAN's RT:  http://rt.cpan.org/Public/Bug/Display.html?id=31291
+    my @to_find;
+    my $value = $object->$attribute();
+    if (ref $value eq 'ARRAY') {
+	@to_find = @{ $value };
+    } else {
+	@to_find = split /\s*,\s*|\s+/, $value;
+    }
     my @found = ();
 
     # handle splat '*' matching of all objects of a type (optimization)
