@@ -1,6 +1,6 @@
 ---
 name: Nagios-Object
-version: 0.21.5
+version: 0.21.6
 author:
   - 'Duncan Ferguson <duncs@cpan.org>'
 abstract: 'Nagios::Object - Nagios object configuration parsing.'
@@ -24,8 +24,8 @@ provides:
     file: lib/Nagios/Config/File.pm
     version: 35
   Nagios::Host:
-    file: lib/Nagios/Object.pm
-    version: 0
+    file: lib/Nagios/Host.pm
+    version: 0.21
   Nagios::Host::Status:
     file: lib/Nagios/StatusLog.pm
     version: 0.1
@@ -40,13 +40,13 @@ provides:
     version: 38
   Nagios::Object::Config:
     file: lib/Nagios/Object/Config.pm
-    version: 35
+    version: 36
   Nagios::Program::Status:
     file: lib/Nagios/StatusLog.pm
     version: 0.1
   Nagios::Service:
-    file: lib/Nagios/Object.pm
-    version: 0
+    file: lib/Nagios/Service.pm
+    version: 0.21
   Nagios::Service::Status:
     file: lib/Nagios/StatusLog.pm
     version: 0.1
@@ -56,7 +56,7 @@ provides:
   Nagios::StatusLog:
     file: lib/Nagios/StatusLog.pm
     version: 38
-generated_by: Module::Build version 0.32
+generated_by: Module::Build version 0.33
 meta-spec:
-  url: http://module-build.sourceforge.net/META-spec-v1.2.html
-  version: 1.2
+  url: http://module-build.sourceforge.net/META-spec-v1.4.html
+  version: 1.4
