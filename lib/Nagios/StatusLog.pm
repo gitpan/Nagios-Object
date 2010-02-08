@@ -25,7 +25,7 @@ use Symbol;
 
 # NOTE: due to CPAN version checks this cannot currently be changed to a
 # standard version string, i.e. '0.21'
-our $VERSION = '40';
+our $VERSION = '41';
 
 # this is going to be rewritten to use AUTOLOAD + method caching in a future version
 BEGIN {
@@ -457,32 +457,29 @@ sub update_v3 ($) {
     open( $log_fh, "<$self->{LOGFILE}" )
         || croak "could not open file $self->{LOGFILE} for reading: $!";
 
-# change the first line of the RE to this:
-# (info|programstatus|hoststatus|servicestatus|contactstatus|servicecomment|hostcomment|servicedowntime|hostdowntime) \s* {(
-# to make it a bit more careful, but it has a measurable cost on runtime
-    my $entry_re = qr/
-        # capture the type into $1
-        (\w+) \s*
-        # capture all of the text between the brackets into $2
-        {( .*? )}
-        # match the last bracket only if followed by another definition
-        (?=(?: \s* (?:info|programstatus|hoststatus|servicestatus|contacstatus|servicecomment|hostcomment|servicedowntime|hostdowntime) \s* { | \Z) )
-        # capture remaining text (1-2 lines) into $3 for re-processing
-        (.*)$
-    /xs;
-
-    my @lines = <$log_fh>;
-    my $file  = "@lines";
-
-#Drop comments if we don't need them as it should speed things up a little bit.
-#Comment out the line below if you do want to keep comments
-    $file =~ s/#.*\n//mg;
-    $file =~ s/[\r\n]+\s*/\n/g;    # clean up whitespace and newlines
-
-    while ( $file =~ /$entry_re/g ) {
-        ( my $type, my $text ) = ( $1, $2 );
-        my %item = map { split /\s*=\s*/, $_, 2 } split /\n/, $text;
-        $handlers{$type}->( \%item );
+    my %valid_types = map { ( $_ => 1 ) } qw(info programstatus hoststatus servicestatus contactstatus servicecomment hostcomment servicedowntime hostdowntime);
+    my $entry = '';
+    my %attributes;
+    my $type = 0;
+    while ( my $line = <$log_fh> ) {
+        next if ( $line =~ /^\s*#|^\s*$/ );
+        if ( $line =~ /^\s*(\w+)\s*{\s*$/ ) {
+            %attributes = ();
+            if (exists $valid_types{$1}) {
+                $type = $1;
+            } else {
+                $type = 0;
+            }
+        }
+        if ( $line =~ /^\s*}\s*$/ ) {
+            # Only save the object if it is a valid type
+            if ($type) {
+                $handlers{$type}->( \%attributes );
+            }
+        }
+        if ( $line =~ /\s*(\w+)=(.*)$/ ) {
+            $attributes{$1} = $2;
+        }
     }
 
     close($log_fh);

@@ -46,11 +46,7 @@ sub NAGIOS_V3         { 1 << 8 }    # nagios v3 attribute
 sub NAGIOS_V3_ONLY    { 1 << 9 }    # not valid for nagios v1 or v2
 
 # export constants - the :all tag will export them all
-our %EXPORT_TAGS = (
-    all => [
-        qw(NAGIOS_NO_INHERIT NAGIOS_PERL_ONLY NAGIOS_V1 NAGIOS_V2 NAGIOS_V3 NAGIOS_V1_ONLY NAGIOS_V2_ONLY NAGIOS_V3_ONLY NAGIOS_NO_DISPLAY)
-    ]
-);
+our %EXPORT_TAGS = ( all => [ qw(NAGIOS_NO_INHERIT NAGIOS_PERL_ONLY NAGIOS_V1 NAGIOS_V2 NAGIOS_V3 NAGIOS_V1_ONLY NAGIOS_V2_ONLY NAGIOS_V3_ONLY NAGIOS_NO_DISPLAY) ] );
 Exporter::export_ok_tags('all');
 
 # we also export %nagios_setup only if it is asked for by name
@@ -71,7 +67,7 @@ push( @Nagios::Object::EXPORT_OK, '%nagios_setup' );
     Service => {
         use                 => [ 'Nagios::Service', 10 ],
         service_description => [ 'STRING',          10 ],
-        display_name        => ['STRING',             280],
+        display_name        => [ 'STRING',          280 ],
         host_name      => [ ['Nagios::Host'],         10 ],
         servicegroups  => [ ['Nagios::ServiceGroup'], 280 ],
         hostgroup_name => [ ['Nagios::HostGroup'],    256 ],
@@ -294,8 +290,8 @@ push( @Nagios::Object::EXPORT_OK, '%nagios_setup' );
         notification_interval => [ 'INTEGER',   280 ],
         name                  => [ 'host_name', 280 ],
         comment               => [ 'comment',   280 ],
-        escalation_options    => [[qw(d u r)],  280 ],
-        file                  => [ 'filename',  280 ]
+        escalation_options => [ [qw(d u r)], 280 ],
+        file => [ 'filename', 280 ]
     },
     HostDependency => {
         use                      => [ 'Nagios::HostDependency', 280 ],
@@ -464,13 +460,11 @@ sub new {
 
     #print "type: $type, key: $nagios_setup_key\n";
 
-    confess
-        "invalid type '$type' for Nagios::Object - does not exist in \%nagios_setup"
+    confess "invalid type '$type' for Nagios::Object - does not exist in \%nagios_setup"
         if ( !exists $nagios_setup{$nagios_setup_key} );
 
     # set everything to undef by default
-    my %default
-        = map { $_ => undef } keys %{ $nagios_setup{$nagios_setup_key} };
+    my %default = map { $_ => undef } keys %{ $nagios_setup{$nagios_setup_key} };
 
     # if pre_link is set, don't set objects' resolved/registered flag
     if ($pre_link) {
@@ -497,8 +491,7 @@ sub new {
             # timeranges must be parsed into ARRAYs, so parse it here so that
             # users don't have to figure out the arrays and so we don't have
             # to export parse_time_range
-            if ( $nagios_setup{$nagios_setup_key}->{$key}[0] eq 'TIMERANGE' )
-            {
+            if ( $nagios_setup{$nagios_setup_key}->{$key}[0] eq 'TIMERANGE' ) {
                 $args{$key} = parse_time_range( $args{$key} );
             }
             $default{$key} = $args{$key};
@@ -633,8 +626,7 @@ sub template {
             return $self->{_use};
         }
         else {
-            confess
-                "Unable to walk object heirarchy without object configuration.";
+            confess "Unable to walk object heirarchy without object configuration.";
         }
     }
 }
@@ -662,9 +654,7 @@ sub name {
 
     if ( $name_method eq 'generated' ) {
         $_name_hack++;
-        return
-            ref($self) . '-'
-            . $_name_hack;    # FIXME: this should work but feels wrong
+        return ref($self) . '-' . $_name_hack;    # FIXME: this should work but feels wrong
     }
 
     if ( !$self->register ) {
@@ -846,7 +836,7 @@ sub _set ($ $ $) {
 
     if ( !$pre_link && !$fast_mode && exists $vf->{$key} ) {
 
-       # validate passed in arugments against arrayref in $vf (\%valid_fields)
+        # validate passed in arugments against arrayref in $vf (\%valid_fields)
         $self->_validate( $key, $value, @{ $vf->{$key} } );
     }
 
@@ -885,9 +875,7 @@ sub _validate {
             # process single values as an arrayref anyways for consistency
             if ( ref($value) ne 'ARRAY' ) { $value = [$value] }
             foreach my $val (@$value) {
-                croak "object isa '"
-                    . ref($val)
-                    . "' when it should be a '$type'"
+                croak "object isa '" . ref($val) . "' when it should be a '$type'"
                     if ( ref($val) ne $type->[0] );
             }
         }
@@ -963,8 +951,7 @@ sub set_hostgroup_name {
         return $self->set_hostgroup( [ @existing, shift ] );
     }
     else {
-        confess
-            "Called set_hostgroup() on an object that doesn't support it.";
+        confess "Called set_hostgroup() on an object that doesn't support it.";
     }
 }
 
@@ -1023,7 +1010,7 @@ GENESIS: {
             # name() is a special case and is implemented by hand
             next if ( $method eq 'name' );
 
-        # the members() method in ServiceGroup is implemented manually (below)
+            # the members() method in ServiceGroup is implemented manually (below)
             next
                 if ( $pkg eq 'Nagios::ServiceGroup' && $method eq 'members' );
 
@@ -1078,8 +1065,7 @@ sub AUTOLOAD {
         $pkg->_make_method($setup_field);
     }
     else {
-        confess
-            "Invalid method call.   $pkg does not know about method $method.";
+        confess "Invalid method call.   $pkg does not know about method $method.";
     }
 
     goto \&{$AUTOLOAD};
@@ -1089,6 +1075,8 @@ sub AUTOLOAD {
 # ---------------------------------------------------------------------------- #
 # special-case methods coded straight into their packages
 
+1;
+
 package Nagios::Host;
 our $VERSION = $Nagios::Object::VERSION;
 
@@ -1096,12 +1084,16 @@ our $VERSION = $Nagios::Object::VERSION;
 sub hostgroups     { shift->hostgroup(@_); }
 sub set_hostgroups { shift->set_hostgroup(@_); }
 
+1;
+
 package Nagios::HostGroup;
 our $VERSION = $Nagios::Object::VERSION;
 
 # aliases
 sub hostgroup     { shift->hostgroup_name(@_); }
 sub set_hostgroup { shift->set_hostgroup_name(@_); }
+
+1;
 
 package Nagios::ServiceGroup;
 use Carp;
@@ -1127,8 +1119,7 @@ sub set_members {
     # has resolved yet
     if ( $self->resolved ) {
         foreach my $item (@_) {
-            confess
-                "set_members() arguments must be objects after resolve_objects() has been called."
+            confess "set_members() arguments must be objects after resolve_objects() has been called."
                 unless ( ref($item) );
             push @members, $item;
         }
@@ -1164,6 +1155,8 @@ sub _split_members {
     #warn Data::Dumper::Dumper(\@out);
     return @out;
 }
+
+1;
 
 package Nagios::Service;
 our $VERSION = $Nagios::Object::VERSION;
