@@ -1,14 +1,7 @@
 ---
-name: Nagios-Object
-version: 0.21.10
+abstract: 'Nagios::Object - Nagios object configuration parsing.'
 author:
   - 'Duncan Ferguson <duncs@cpan.org>'
-abstract: 'Nagios::Object - Nagios object configuration parsing.'
-license: gpl
-resources:
-  license: http://www.gnu.org/licenses/old-licenses/gpl-1.0.txt
-requires:
-  perl: 5.6.1
 build_requires:
   Data::Dumper: 0.01
   Module::Build: 0.26
@@ -16,6 +9,14 @@ build_requires:
   Test::Exception: 0.01
   Test::More: 0.01
   Test::NoWarnings: 0.08
+configure_requires:
+  Module::Build: 0.36
+generated_by: 'Module::Build version 0.3603'
+license: gpl
+meta-spec:
+  url: http://module-build.sourceforge.net/META-spec-v1.4.html
+  version: 1.4
+name: Nagios-Object
 provides:
   Nagios::Config:
     file: lib/Nagios/Config.pm
@@ -40,7 +41,7 @@ provides:
     version: 40
   Nagios::Object::Config:
     file: lib/Nagios/Object/Config.pm
-    version: 36
+    version: 37
   Nagios::Program::Status:
     file: lib/Nagios/StatusLog.pm
     version: 0.1
@@ -56,7 +57,11 @@ provides:
   Nagios::StatusLog:
     file: lib/Nagios/StatusLog.pm
     version: 41
-generated_by: Module::Build version 0.33
-meta-spec:
-  url: http://module-build.sourceforge.net/META-spec-v1.4.html
-  version: 1.4
+requires:
+  perl: v5.6.1
+resources:
+  bugtracker: https://rt.cpan.org/Public/Dist/Display.html?Name=Nagios-Object
+  homepage: http://github.com/duncs/perl-nagios-object
+  license: http://www.gnu.org/licenses/old-licenses/gpl-1.0.txt
+  repository: http://github.com/duncs/perl-nagios-object
+version: v0.21.12
