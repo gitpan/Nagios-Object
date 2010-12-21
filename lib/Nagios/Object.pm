@@ -28,7 +28,7 @@ use Scalar::Util qw(blessed);
 
 # NOTE: due to CPAN version checks this cannot currently be changed to a
 # standard version string, i.e. '0.21'
-our $VERSION   = '40';
+our $VERSION   = '45';
 our $pre_link  = undef;
 our $fast_mode = undef;
 our %nagios_setup;
@@ -44,11 +44,12 @@ sub NAGIOS_V2_ONLY    { 1 << 6 }    # not valid for nagios v1
 sub NAGIOS_NO_DISPLAY { 1 << 7 }    # should not be displayed by gui
 sub NAGIOS_V3         { 1 << 8 }    # nagios v3 attribute
 sub NAGIOS_V3_ONLY    { 1 << 9 }    # not valid for nagios v1 or v2
+sub NAGIOS_GROUP_SYNC { 1 << 10 }   # keep sync'ed with members method in group object
 
 # export constants - the :all tag will export them all
 our %EXPORT_TAGS = (
     all => [
-        qw(NAGIOS_NO_INHERIT NAGIOS_PERL_ONLY NAGIOS_V1 NAGIOS_V2 NAGIOS_V3 NAGIOS_V1_ONLY NAGIOS_V2_ONLY NAGIOS_V3_ONLY NAGIOS_NO_DISPLAY)
+        qw(NAGIOS_NO_INHERIT NAGIOS_PERL_ONLY NAGIOS_V1 NAGIOS_V2 NAGIOS_V3 NAGIOS_V1_ONLY NAGIOS_V2_ONLY NAGIOS_V3_ONLY NAGIOS_NO_DISPLAY NAGIOS_GROUP_SYNC)
     ]
 );
 Exporter::export_ok_tags('all');
@@ -71,7 +72,7 @@ push( @Nagios::Object::EXPORT_OK, '%nagios_setup' );
     Service => {
         use                 => [ 'Nagios::Service', 10 ],
         service_description => [ 'STRING',          10 ],
-        display_name        => ['STRING',             280],
+        display_name        => [ 'STRING',          280 ],
         host_name      => [ ['Nagios::Host'],         10 ],
         servicegroups  => [ ['Nagios::ServiceGroup'], 280 ],
         hostgroup_name => [ ['Nagios::HostGroup'],    256 ],
@@ -120,6 +121,7 @@ push( @Nagios::Object::EXPORT_OK, '%nagios_setup' );
         servicegroup_name => [ 'STRING',               18 ],
         alias             => [ 'STRING',               16 ],
         members => [ [ 'Nagios::Host', 'Nagios::Service' ], 16 ],
+        servicegroup_members => [ ['Nagios::ServiceGroup'], 280 ],
         name    => [ 'servicegroup_name', 22 ],
         comment => [ 'comment',           22 ],
         file    => [ 'filename',          22 ]
@@ -130,7 +132,7 @@ push( @Nagios::Object::EXPORT_OK, '%nagios_setup' );
         alias     => [ 'STRING',       280 ],
         address   => [ 'STRING',       280 ],
         parents    => [ ['Nagios::Host'],      280 ],
-        hostgroups => [ ['Nagios::HostGroup'], 280 ],
+        hostgroups => [ ['Nagios::HostGroup'], 1304 ],
         check_command      => [ 'STRING',  280 ],
         max_check_attempts => [ 'INTEGER', 280 ],
         checks_enabled     => [ 'BINARY',  280 ],
@@ -173,8 +175,9 @@ push( @Nagios::Object::EXPORT_OK, '%nagios_setup' );
         hostgroup_name => [ 'STRING',            280 ],
         alias          => [ 'STRING',            280 ],
         contact_groups => [ ['Nagios::ContactGroup'], 40 ],
-        members        => [ ['Nagios::Host'],         280 ],
-        name    => [ 'hostgroup', 280 ],
+        members        => [ ['Nagios::Host'],         1304 ],
+        hostgroup_members => [ ['Nagios::HostGroup'], 280 ],
+        name    => [ 'hostgroup_name', 280 ],
         comment => [ 'comment',   280 ],
         file    => [ 'filename',  280 ]
     },
@@ -201,7 +204,7 @@ push( @Nagios::Object::EXPORT_OK, '%nagios_setup' );
         address4                      => [ 'STRING', 16 ],
         address5                      => [ 'STRING', 16 ],
         address6                      => [ 'STRING', 16 ],
-        contactgroups => [ ['Nagios::ContactGroup'], 16 ],
+        contactgroups => [ ['Nagios::ContactGroup'], 1040 ],
         name    => [ 'contact_name', 280 ],
         comment => [ 'comment',      280 ],
         file    => [ 'filename',     280 ]
@@ -210,7 +213,8 @@ push( @Nagios::Object::EXPORT_OK, '%nagios_setup' );
         use               => [ 'Nagios::ContactGroup', 280 ],
         contactgroup_name => [ 'STRING',               280 ],
         alias             => [ 'STRING',               280 ],
-        members => [ ['Nagios::Contact'], 280 ],
+        members => [ ['Nagios::Contact'], 1304 ],
+        contactgroup_members => [ ['Nagios::ContactGroup'], 280 ],
         name    => [ 'contactgroup_name', 280 ],
         comment => [ 'comment',           280 ],
         file    => [ 'filename',          280 ]
@@ -252,7 +256,7 @@ push( @Nagios::Object::EXPORT_OK, '%nagios_setup' );
     },
     ServiceEscalation => {
         use       => [ 'Nagios::ServiceEscalation', 280 ],
-        host_name => [ 'Nagios::Host',              280 ],
+        host_name => [ ['Nagios::Host'],            280 ],
         hostgroup_name => [ ['Nagios::HostGroup'], 280 ],
         service_description => [ 'Nagios::Service', 280 ],
         contacts       => [ ['Nagios::Contact'],      280 ],
@@ -268,11 +272,11 @@ push( @Nagios::Object::EXPORT_OK, '%nagios_setup' );
     },
     ServiceDependency => {
         use                           => [ 'Nagios::ServiceDependency', 280 ],
-        dependent_host_name           => [ 'Nagios::Host',              280 ],
+        dependent_host_name           => [ ['Nagios::Host'],            280 ],
         dependent_service_description => [ 'Nagios::Service',           280 ],
-        hostgroup_name                => [ 'Nagios::HostGroup',         280 ],
-        dependent_hostgroup_name      => [ 'Nagios::HostGroup',         280 ],
-        host_name                     => [ 'Nagios::Host',              280 ],
+        hostgroup_name                => [ ['Nagios::HostGroup'],       280 ],
+        dependent_hostgroup_name      => [ ['Nagios::HostGroup'],       280 ],
+        host_name                     => [ ['Nagios::Host'],            280 ],
         service_description           => [ 'Nagios::Service',           280 ],
         inherits_parent               => [ 'INTEGER',                   280 ],
         execution_failure_criteria    => [ [qw(o w u c n)], 280 ],
@@ -285,8 +289,8 @@ push( @Nagios::Object::EXPORT_OK, '%nagios_setup' );
     },
     HostEscalation => {
         use       => [ 'Nagios::HostEscalation', 280 ],
-        host_name => [ 'Nagios::Host',           280 ],
-        hostgroup => [ 'Nagios::HostGroup',      280 ],
+        host_name => [ ['Nagios::Host'],         280 ],
+        hostgroup => [ ['Nagios::HostGroup'],    280 ],
         contacts       => [ ['Nagios::Contact'],      280 ],
         contact_groups => [ ['Nagios::ContactGroup'], 280 ],
         first_notification    => [ 'INTEGER',   280 ],
@@ -294,14 +298,15 @@ push( @Nagios::Object::EXPORT_OK, '%nagios_setup' );
         notification_interval => [ 'INTEGER',   280 ],
         name                  => [ 'host_name', 280 ],
         comment               => [ 'comment',   280 ],
-        escalation_options    => [[qw(d u r)],  280 ],
-        file                  => [ 'filename',  280 ]
+        escalation_options => [ [qw(d u r)], 280 ],
+        file => [ 'filename', 280 ]
     },
     HostDependency => {
         use                      => [ 'Nagios::HostDependency', 280 ],
-        dependent_host_name      => [ 'Nagios::Host',           280 ],
-        dependent_hostgroup_name => [ 'Nagios::HostGroup',      280 ],
-        host_name                => [ 'Nagios::Host',           280 ],
+        dependent_host_name      => [ ['Nagios::Host'],         280 ],
+        dependent_hostgroup_name => [ ['Nagios::HostGroup'],    280 ],
+        host_name                => [ ['Nagios::Host'],         280 ],
+        hostgroup_name           => [ ['Nagios::HostGroup'],    280 ],
         inherits_parent          => [ 'INTEGER',                16 ],
         notification_failure_criteria => [ [qw(o w u c n)], 280 ],
         notification_failure_options  => [ [qw(o w u c n)], 280 ],
@@ -657,20 +662,20 @@ Which is just short for:
 my $_name_hack;
 
 sub name {
-    my $self        = shift;
-    my $name_method = $self->_name_attribute;
-
-    if ( $name_method eq 'generated' ) {
-        $_name_hack++;
-        return
-            ref($self) . '-'
-            . $_name_hack;    # FIXME: this should work but feels wrong
-    }
+    my $self = shift;
 
     if ( !$self->register ) {
         return $self->{name};
     }
     else {
+        my $name_method = $self->_name_attribute;
+        if ( $name_method eq 'generated' ) {
+            $_name_hack++;
+            return
+                ref($self) . '-'
+                . $_name_hack;    # FIXME: this should work but feels wrong
+        }
+
         my $name = $self->$name_method();
 
         # recurse down on references to get the names, then generate something

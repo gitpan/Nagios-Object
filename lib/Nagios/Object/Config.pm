@@ -27,7 +27,7 @@ use Carp;
 
 # NOTE: due to CPAN version checks this cannot currently be changed to a
 # standard version string, i.e. '0.21'
-our $VERSION     = '37';
+our $VERSION     = '39';
 our $fast_mode   = undef;
 our $strict_mode = undef;
 
@@ -71,9 +71,10 @@ sub new {
         config_files         => []
     };
 
-    # initialize lists e.g. host_list, command_list, etc.
+    # initialize lists and indexes e.g. host_list, command_index, etc.
     foreach my $class ( keys %nagios_setup ) {
         $self->{ lc($class) . '_list' } = [];
+        $self->{ lc($class) . '_index' } = {};
     }
 
     # parse arguments passed in
@@ -294,6 +295,11 @@ sub parse {
                     = [ 'STRING', 0 ];
                 $current->{$key} = $val;
             }
+
+            # Add to the find_object search hash.
+            if ( $key eq 'name' || $key eq $nagios_setup{ $current->setup_key }->{'name'}[0] ) {
+                push( @{ $self->{ lc($current->setup_key) . '_index' }->{$val} }, $current );
+            }
         }
         else {
             croak
@@ -327,19 +333,42 @@ sub find_object {
 
     my $searchlist;
     if ( $type && $type =~ /^Nagios::/ ) {
-        $searchlist = $self->all_objects_for_type($type);
+        my @objl = $self->find_objects($name, $type);
+        return $objl[0] if ( scalar @objl );
     }
     elsif ( !$type ) {
         $searchlist = $self->all_objects;
-    }
 
-    foreach my $obj (@$searchlist) {
+        foreach my $obj (@$searchlist) {
 
-      #printf STDERR "obj name '%s', name searched '%s'\n", $obj->name, $name;
-        if ( $obj->name && $obj->name eq $name ) {
-            return $obj;
+          #printf STDERR "obj name '%s', name searched '%s'\n", $obj->name, $name;
+            my $n = $obj->name;
+            if ( $n && $n eq $name ) {
+                return $obj;
+            }
         }
     }
+}
+
+=item find_objects()
+
+Search through the list of objects' names and return all the matches. 
+The second argument is required.
+
+ my @object_list = $parser->find_objects( "load", "Nagios::Service" );
+
+=cut
+
+sub find_objects {
+    my ( $self, $name, $type ) = @_;
+
+    if ( $type && $type =~ /^Nagios::(.*)/ ) {
+        my $index_type = lc($1) . '_index';
+        if ( exists $self->{$index_type} && exists $self->{$index_type}->{$name} ) {
+             return @{$self->{$index_type}->{$name}};
+        }
+    }
+    return ();
 }
 
 =item find_objects_by_regex()
@@ -584,10 +613,98 @@ sub register {
             $object->$set(@new_list);
         }
         else {
-            my $ref = $self->find_object( $object->$attribute(), $attr_type );
-            $object->_set( $attribute, $ref ) if ($ref);
+            my @refl = $self->find_objects( $object->$attribute(), $attr_type );
+            if ( scalar @refl == 1 ) {
+                $object->_set( $attribute, $refl[0] );
+            }
+
+            # If we have found multiple hits, then we most likely have a Nagios::Service
+            # Need to pick the correct one.  Use the Nagios::Host object to help pick it.
+            elsif ( scalar @refl > 1 && ( $object->can('host_name') || $object->can('hostgroup_name') ))  {
+                sub _host_list {
+                    my ($self, $method, $h) = @_;
+                    if ( $self->can($method) ) {
+                        if ( ref $self->$method eq 'ARRAY' ) {
+                            map {
+                                if ( ref $_ eq '' ) {
+                                    $h->{$_}++;
+                                } else {
+                                    $h->{$_->host_name}++;
+                                }
+                            } @{$self->$method};
+                        } elsif ( defined $self->$method ) {
+                            $h->{ $self->$method }++;
+                        }
+                    }
+                }
+                sub get_host_list {
+                    my $self = shift;
+                    my $obj = $self->{'object_config_object'};
+                    my %h;
+                    &_host_list($self, 'host_name', \%h);
+                    if ( $self->can('hostgroup_name') ) {
+                        if ( ref $self->hostgroup_name eq 'ARRAY' ) {
+                            foreach my $hg ( @{$self->hostgroup_name} ) {
+                                my $hg2 = ( ref $hg eq ''
+                                    ? $obj->find_object($hg, 'Nagios::HostGroup')
+                                    : $hg);
+                                &_host_list($hg2, 'members', \%h);
+                            }
+                        } elsif ( defined $self->hostgroup_name ) {
+                            my $hg2 = ( ref $self->hostgroup_name eq ''
+                                ? $obj->find_object($self->hostgroup_name, 'Nagios::HostGroup')
+                                : $self->hostgroup_name);
+                            &_host_list($hg2, 'members', \%h);
+                        }
+                    }
+                    return keys %h;
+                }
+                my @h1 = &get_host_list($object);
+                my $old_found = 0;
+                foreach my $o ( @refl ) {
+                    my @h2 = &get_host_list($o);
+                    next if ( ! scalar @h2 );
+                    my $found = 0;
+                    foreach my $h ( @h1 ) {
+                        $found++ if ( grep {$h eq $_} @h2 );
+                    }
+                    # Use the service which had the max hosts found.
+                    if ( $found > $old_found ) {
+                        $object->_set( $attribute, $o );
+                        $old_found = $found;
+                    }
+                }
+            }
         }
 
+        # This field is marked as to be synced with it's group members object
+        if ( ( $nagios_setup{ $object->setup_key }->{ $attribute }[1] & NAGIOS_GROUP_SYNC ) == NAGIOS_GROUP_SYNC ) {
+            my $method = ( $attribute eq 'members'
+                ? lc($object->{'_nagios_setup_key'}) . 's'
+                : 'members');
+            my $setmethod = 'set_' . $method;
+
+            foreach my $o ( @{$object->$attribute()} ) {
+                next if ( ! $o->can($method) );
+                my $members = $o->$method();
+
+                # If the object has not yet been registered, just add the name
+                if ( ! $o->registered ) { 
+                    if ( defined $members && ref $members eq '' ) {
+                        $members = [ $members, $object->name ];
+                    } else {
+                        push @$members, $object->name;
+                    }
+                    $o->$setmethod($members);
+                }
+
+                # otherwise add the object itself.
+                elsif ( ! $members || ! grep ({$object eq $_} @$members )) {
+                    push @$members, $object;
+                    $o->$setmethod($members);
+                }
+            }
+        }
     }
 
     $object->registered(1);
@@ -689,7 +806,9 @@ Same deal as resolve_objects(), but as you'd guess, it registers all objects cur
 sub register_objects {
     my $self = shift;
 
-    foreach my $obj_type ( map { lc $_ } keys %nagios_setup ) {
+    # Order we process the Object is important.  We need the Host/HostGroups
+    # processed before the Service and the Service before the ServiceEescalation
+    foreach my $obj_type ( map { lc $_ } sort keys %nagios_setup ) {
         foreach my $object ( @{ $self->{ $obj_type . '_list' } } ) {
             $self->register($object);
         }
