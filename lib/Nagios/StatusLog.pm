@@ -26,7 +26,7 @@ use Scalar::Util;
 
 # NOTE: due to CPAN version checks this cannot currently be changed to a
 # standard version string, i.e. '0.21'
-our $VERSION = '44';
+our $VERSION = '45';
 
 # this is going to be rewritten to use AUTOLOAD + method caching in a future version
 BEGIN {
@@ -595,6 +595,29 @@ sub list_services_on_host {
         $host = $host->host_name;
     }
     return keys %{ $self->{SERVICE}{$host} };
+}
+
+=item serviceproblems()
+
+Returns a hash of all services that are not in an OK state
+
+ my %serviceproblems = $log->serviceproblems();
+
+=cut
+
+sub serviceproblems {
+    my ( $self, $host, $service ) = @_;
+    my %list = ();
+
+    $self->{SERVICE}{$host}{$service}{__parent} = $self;
+    Scalar::Util::weaken($self->{SERVICE}{$host}{$service}{__parent});
+    
+    foreach my $host ( keys %{ $self->{SERVICE} } ) {
+        foreach my $service ( keys %{ $self->{SERVICE}{$host} } ) {
+            $list{$host}{$service} = $self->{SERVICE}{$host}{$service} unless $self->{SERVICE}{$host}{$service}{current_state} == 0;
+        }
+    }
+    return %list;
 }
 
 =item host()
